@@ -4,15 +4,10 @@ import android.inputmethodservice.InputMethodService;
 import android.inputmethodservice.Keyboard;
 import android.inputmethodservice.KeyboardView;
 import android.media.AudioManager;
+import android.provider.Settings.SettingNotFoundException;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.inputmethod.InputConnection;
-import android.os.Bundle;
-import android.provider.Settings.SettingNotFoundException;
-import android.app.Activity;
-import android.view.Menu;
-import android.widget.SeekBar;
-import android.widget.SeekBar.OnSeekBarChangeListener;
 
 /**
  * Created by deepankur on 1/6/17.
@@ -26,16 +21,21 @@ public class SimpleIME extends InputMethodService
 
     private boolean caps = false;
 
+
     @Override
     public View onCreateInputView() {
-        kv = (KeyboardView)getLayoutInflater().inflate(R.layout.keyboard, null);
+        View view = getLayoutInflater().inflate(R.layout.keyboard, null);
+        kv = (KeyboardView) view.findViewById(R.id.keyboardView);
         keyboard = new Keyboard(this, R.xml.qwerty);
         kv.setKeyboard(keyboard);
         kv.setOnKeyboardActionListener(this);
         return kv;
     }
 
-    void  aVoid(){
+
+
+
+    private void changeBrightness(int changeBrightnessByThisMuch) {
         float curBrightnessValue = 0;
         try {
             curBrightnessValue = android.provider.Settings.System.getInt(
@@ -46,34 +46,13 @@ public class SimpleIME extends InputMethodService
         }
 
         int screen_brightness = (int) curBrightnessValue;
-        seekBar.setOnSeekBarChangeListener(new OnSeekBarChangeListener() {
-            int progress = 0;
-
-            @Override
-            public void onProgressChanged(SeekBar seekBar, int progresValue,
-                                          boolean fromUser) {
-                progress = progresValue;
-            }
-
-            @Override
-            public void onStartTrackingTouch(SeekBar seekBar) {
-                // Do something here,
-                // if you want to do anything at the start of
-                // touching the seekbar
-            }
-
-            @Override
-            public void onStopTrackingTouch(SeekBar seekBar) {
-                android.provider.Settings.System.putInt(getContentResolver(),
-                        android.provider.Settings.System.SCREEN_BRIGHTNESS,
-                        progress);
-            }
-        });
+        android.provider.Settings.System.putInt(getContentResolver(),
+                android.provider.Settings.System.SCREEN_BRIGHTNESS, screen_brightness + changeBrightnessByThisMuch);
     }
 
-    private void playClick(int keyCode){
-        AudioManager am = (AudioManager)getSystemService(AUDIO_SERVICE);
-        switch(keyCode){
+    private void playClick(int keyCode) {
+        AudioManager am = (AudioManager) getSystemService(AUDIO_SERVICE);
+        switch (keyCode) {
             case 32:
                 am.playSoundEffect(AudioManager.FX_KEYPRESS_SPACEBAR);
                 break;
@@ -84,7 +63,8 @@ public class SimpleIME extends InputMethodService
             case Keyboard.KEYCODE_DELETE:
                 am.playSoundEffect(AudioManager.FX_KEYPRESS_DELETE);
                 break;
-            default: am.playSoundEffect(AudioManager.FX_KEYPRESS_STANDARD);
+            default:
+                am.playSoundEffect(AudioManager.FX_KEYPRESS_STANDARD);
         }
     }
 
@@ -92,8 +72,8 @@ public class SimpleIME extends InputMethodService
     public void onKey(int primaryCode, int[] keyCodes) {
         InputConnection ic = getCurrentInputConnection();
         playClick(primaryCode);
-        switch(primaryCode){
-            case Keyboard.KEYCODE_DELETE :
+        switch (primaryCode) {
+            case Keyboard.KEYCODE_DELETE:
                 ic.deleteSurroundingText(1, 0);
                 break;
             case Keyboard.KEYCODE_SHIFT:
@@ -105,11 +85,11 @@ public class SimpleIME extends InputMethodService
                 ic.sendKeyEvent(new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_ENTER));
                 break;
             default:
-                char code = (char)primaryCode;
-                if(Character.isLetter(code) && caps){
+                char code = (char) primaryCode;
+                if (Character.isLetter(code) && caps) {
                     code = Character.toUpperCase(code);
                 }
-                ic.commitText(String.valueOf(code),1);
+                ic.commitText(String.valueOf(code), 1);
         }
     }
 
