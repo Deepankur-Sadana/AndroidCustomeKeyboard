@@ -1,20 +1,25 @@
 package deepankur.com.customkeyboard;
 
+import android.content.pm.ApplicationInfo;
+import android.content.pm.PackageManager;
 import android.inputmethodservice.InputMethodService;
 import android.inputmethodservice.Keyboard;
 import android.inputmethodservice.KeyboardView;
 import android.media.AudioManager;
 import android.provider.Settings.SettingNotFoundException;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.inputmethod.InputConnection;
+
+import java.util.List;
 
 /**
  * Created by deepankur on 1/6/17.
  */
 
 public class SimpleIME extends InputMethodService
-        implements KeyboardView.OnKeyboardActionListener {
+         implements KeyboardView.OnKeyboardActionListener {
 
     private KeyboardView kv;
     private Keyboard keyboard;
@@ -31,8 +36,6 @@ public class SimpleIME extends InputMethodService
         kv.setOnKeyboardActionListener(this);
         return kv;
     }
-
-
 
 
     private void changeBrightness(int changeBrightnessByThisMuch) {
@@ -91,6 +94,21 @@ public class SimpleIME extends InputMethodService
                 }
                 ic.commitText(String.valueOf(code), 1);
         }
+    }
+
+    final String TAG = getClass().getSimpleName();
+
+    void getAllPackages() {
+        final PackageManager pm = getPackageManager();
+        //get a list of installed apps.
+        List<ApplicationInfo> packages = pm.getInstalledApplications(PackageManager.GET_META_DATA);
+
+        for (ApplicationInfo packageInfo : packages) {
+            Log.d(TAG, "Installed package :" + packageInfo.packageName);
+            Log.d(TAG, "Source dir : " + packageInfo.sourceDir);
+            Log.d(TAG, "Launch Activity :" + pm.getLaunchIntentForPackage(packageInfo.packageName));
+        }
+        // the getLaunchIntentForPackage returns an intent that you can use with startActivity()
     }
 
     @Override
